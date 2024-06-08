@@ -1,0 +1,35 @@
+#buttonContainer {
+    display: flex;
+    flex-direction: column; /* 버튼을 세로로 배열 */
+    align-items: flex-start; /* 왼쪽 정렬 */
+    margin-top: 20px;
+}
+
+button {
+    margin: 5px;
+}
+
+.holiday {
+    background-color: red;
+    color: white;
+}
+
+.weekend {
+    background-color: blue;
+    color: white;
+}
+
+.breakday {
+    background-color: green;
+    color: white;
+}
+
+.weekday {
+    background-color: black;
+    color: white;
+}
+
+#selectHoliday, #selectWeekend, #selectBreakDay, #selectWeekday{
+    display: block;
+    margin: 10px 0;
+}

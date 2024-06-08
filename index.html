@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableware Washing Group Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <label for="startDate">시작 날짜:</label>
+    <input type="date" id="startDate">
+    
+    <label for="endDate">끝 날짜:</label>
+    <input type="date" id="endDate">
+    
+    <button onclick="generateButtons()">날짜 생성</button>
+    
+    <button id="selectHoliday">공휴일 선택</button>
+    <button id="selectWeekend">주말 선택</button>
+    <button id="selectBreakDay">전투휴무 선택</button>
+    <button id="selectWeekday">평일 선택</button>
+    
+    <button onclick="confirmDates()">날짜 확정</button>
+    
+    <div id="buttonContainer"></div>
+    
+    <label for="classLevel">짬:</label>
+    <select id="classLevel">
+        <option value="1">1단계</option>
+        <option value="2">2단계</option>
+        <option value="3">3단계</option>
+        <option value="4">4단계</option>
+        <option value="5">5단계</option>
+        <option value="6">6단계</option>
+        <option value="7">7단계</option>
+    </select>
+
+    <label for="rank">계급:</label>
+    <select id="rank">
+        <option value="sergeant">병장</option>
+        <option value="coporal">상병</option>
+    <option value="private1stClass">일병</option>
+        <option value="private">이병</option>
+    </select>
+
+    <label for="name">이름:</label>
+    <input type="text" id="name">
+
+    <button onclick="addPerson()">인원 추가</button>
+
+    <div id="personContainer"></div>
+    
+<script src="script.js"></script>
+</body>
+</html>
