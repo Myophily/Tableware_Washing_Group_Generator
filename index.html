@@ -1,55 +1,1424 @@
 <!DOCTYPE html>
-<html lang="kr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableware Washing Group Generator</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <label for="startDate">시작 날짜:</label>
-    <input type="date" id="startDate">
-    
-    <label for="endDate">끝 날짜:</label>
-    <input type="date" id="endDate">
-    
-    <button onclick="generateButtons()">날짜 생성</button>
-    
-    <button id="selectHoliday">공휴일 선택</button>
-    <button id="selectWeekend">주말 선택</button>
-    <button id="selectBreakDay">전투휴무 선택</button>
-    <button id="selectWeekday">평일 선택</button>
-    
-    <button onclick="confirmDates()">날짜 확정</button>
-    
-    <div id="buttonContainer"></div>
-    
-    <label for="classLevel">짬:</label>
-    <select id="classLevel">
-        <option value="1">1단계</option>
-        <option value="2">2단계</option>
-        <option value="3">3단계</option>
-        <option value="4">4단계</option>
-        <option value="5">5단계</option>
-        <option value="6">6단계</option>
-        <option value="7">7단계</option>
-    </select>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>식기세척조 편성 프로그램</title>
+    <style>
+      :root {
+        --primary-color: #3498db;
+        --secondary-color: #2ecc71;
+        --accent-color: #e74c3c;
+        --light-color: #f5f5f5;
+        --dark-color: #333;
+        --border-color: #ddd;
+      }
 
-    <label for="rank">계급:</label>
-    <select id="rank">
-        <option value="private">이병</option>
-        <option value="private1stClass">일병</option>
-        <option value="coporal">상병</option>
-        <option value="sergeant">병장</option>
-    </select>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    <label for="name">이름:</label>
-    <input type="text" id="name">
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: var(--dark-color);
+        background-color: var(--light-color);
+        padding: 10px;
+        max-width: 100%;
+        margin: 0 auto;
+      }
 
-    <button onclick="addPerson()">인원 추가</button>
+      h1,
+      h2,
+      h3 {
+        margin-bottom: 16px;
+        color: var(--dark-color);
+      }
 
-    <div id="personContainer"></div>
-    
-<script src="script.js"></script>
-</body>
+      h1 {
+        text-align: center;
+        margin-top: 10px;
+        color: var(--primary-color);
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 10px;
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+      }
+
+      .section {
+        background-color: white;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+      }
+
+      input,
+      select,
+      button {
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 16px;
+        min-height: 44px;
+      }
+
+      button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        min-width: 44px;
+        font-weight: bold;
+      }
+
+      button:hover {
+        background-color: #2980b9;
+      }
+
+      button.secondary {
+        background-color: var(--secondary-color);
+      }
+
+      button.secondary:hover {
+        background-color: #27ae60;
+      }
+
+      button.danger {
+        background-color: var(--accent-color);
+      }
+
+      button.danger:hover {
+        background-color: #c0392b;
+      }
+
+      /* 테이블 스타일 개선 */
+      .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid var(--border-color);
+      }
+
+      th,
+      td {
+        padding: 10px;
+        text-align: center;
+      }
+
+      th {
+        background-color: #f0f0f0;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      /* 테이블 헤더 고정 */
+      .absense-table-container table thead tr th,
+      .results-container table thead tr th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background-color: #f0f0f0;
+      }
+
+      /* 첫 번째 행 헤더를 맨 위에 고정 */
+      .absense-table-container table thead tr:first-child th,
+      .results-container table thead tr:first-child th {
+        top: 0;
+        z-index: 3;
+      }
+
+      /* 두 번째 행 헤더는 첫 번째 행 아래에 고정 */
+      .absense-table-container table thead tr:nth-child(2) th,
+      .results-container table thead tr:nth-child(2) th {
+        top: 30px; /* 첫 번째 행 높이에 맞게 조정 */
+      }
+
+      /* 첫 번째 열 고정 */
+      .absense-table-container table th:first-child,
+      .absense-table-container table td:first-child,
+      .results-container table th:first-child,
+      .results-container table td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background-color: #f0f0f0;
+      }
+
+      /* 헤더의 첫 번째 셀은 가장 위에 표시 */
+      .absense-table-container table thead th:first-child,
+      .results-container table thead th:first-child {
+        z-index: 4;
+      }
+
+      /* 결과 테이블 열 너비 조정 */
+      .results-container table th:nth-child(1),
+      .results-container table td:nth-child(1) {
+        width: 70px; /* 날짜 열 좁게 */
+      }
+
+      .results-container table th:nth-child(2),
+      .results-container table td:nth-child(2) {
+        width: 50px; /* 요일 열 더 좁게 */
+      }
+
+      .results-container table th:nth-child(3),
+      .results-container table th:nth-child(4),
+      .results-container table th:nth-child(5),
+      .results-container table td:nth-child(3),
+      .results-container table td:nth-child(4),
+      .results-container table td:nth-child(5) {
+        width: auto; /* 나머지 열 자동 확장 */
+      }
+
+      td.weekend {
+        background-color: #f9eaea;
+      }
+
+      .member-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        margin-bottom: 5px;
+      }
+
+      .checkbox-container {
+        position: relative;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .absense-table-container {
+        max-height: 600px;
+        overflow-y: auto;
+        overflow-x: auto;
+        margin-top: 10px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .results-container {
+        max-height: 600px;
+        overflow-y: auto;
+        overflow-x: auto;
+        margin-top: 10px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .member-list {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 10px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .rank-indicator {
+        display: inline-block;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 25px;
+        margin-right: 8px;
+        font-weight: bold;
+        color: white;
+        flex-shrink: 0;
+      }
+
+      .rank-1 {
+        background-color: #ff5733;
+      }
+      .rank-2 {
+        background-color: #ff9933;
+      }
+      .rank-3 {
+        background-color: #ffcc33;
+      }
+      .rank-4 {
+        background-color: #33cc33;
+      }
+      .rank-5 {
+        background-color: #33cccc;
+      }
+      .rank-6 {
+        background-color: #3366cc;
+      }
+      .rank-7 {
+        background-color: #9933cc;
+      }
+
+      .tab-container {
+        display: flex;
+        margin-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+        flex-wrap: wrap;
+      }
+
+      .tab {
+        padding: 12px 15px;
+        cursor: pointer;
+        background-color: #f0f0f0;
+        border: 1px solid var(--border-color);
+        border-bottom: none;
+        border-radius: 5px 5px 0 0;
+        margin-right: 5px;
+        margin-bottom: 5px;
+        font-size: 14px;
+      }
+
+      .tab.active {
+        background-color: white;
+        border-bottom: 1px solid white;
+        margin-bottom: -1px;
+        font-weight: bold;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .loader {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid var(--primary-color);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+        display: none;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .result-member {
+        padding: 5px;
+        border-radius: 3px;
+        margin: 4px 0;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .legend {
+        margin-top: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-right: 15px;
+        margin-bottom: 5px;
+      }
+
+      #notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 15px;
+        background-color: #2ecc71;
+        color: white;
+        border-radius: 5px;
+        display: none;
+        z-index: 1000;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        max-width: 90%;
+      }
+
+      .day-label {
+        writing-mode: vertical-lr;
+        transform: rotate(180deg);
+        text-align: center;
+        white-space: nowrap;
+        padding: 5px;
+        font-weight: bold;
+      }
+
+      .meal-label {
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .participation-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .stats-section {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      /* 모바일 최적화 스타일 - 작은 화면용 */
+      @media (max-width: 768px) {
+        body {
+          padding: 5px;
+        }
+
+        .row {
+          flex-direction: column;
+          margin-bottom: 10px;
+        }
+
+        .section {
+          padding: 12px;
+          margin-bottom: 15px;
+        }
+
+        input,
+        select,
+        button {
+          width: 100%;
+          margin-bottom: 5px;
+          font-size: 16px;
+          padding: 12px;
+        }
+
+        table {
+          font-size: 13px;
+        }
+
+        th,
+        td {
+          padding: 8px 5px;
+        }
+
+        .tab {
+          padding: 10px;
+          font-size: 13px;
+          flex-grow: 1;
+          text-align: center;
+        }
+
+        .member-row {
+          padding: 10px;
+        }
+
+        h2 {
+          font-size: 1.3rem;
+        }
+
+        h3 {
+          font-size: 1.1rem;
+        }
+
+        .legend {
+          justify-content: center;
+        }
+      }
+
+      /* 더 작은 모바일 화면용 */
+      @media (max-width: 480px) {
+        .tab-container {
+          flex-direction: column;
+          border-bottom: none;
+        }
+
+        .tab {
+          margin-right: 0;
+          border-radius: 4px;
+          margin-bottom: 5px;
+          border: 1px solid var(--border-color);
+        }
+
+        .tab.active {
+          border-bottom: 1px solid var(--border-color);
+          margin-bottom: 5px;
+        }
+
+        h1 {
+          font-size: clamp(1.3rem, 5vw, 1.8rem);
+        }
+
+        .legend-item {
+          margin-right: 5px;
+          font-size: 13px;
+        }
+
+        .rank-indicator {
+          width: 20px;
+          height: 20px;
+          line-height: 20px;
+          font-size: 12px;
+        }
+
+        .toggle-all-absense {
+          padding: 3px 5px !important;
+          font-size: 11px !important;
+          min-height: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>식기세척조 편성 프로그램</h1>
+
+    <div class="tab-container">
+      <div class="tab active" data-tab="members">1. 인원 관리</div>
+      <div class="tab" data-tab="absense">2. 불참 조건 설정</div>
+      <div class="tab" data-tab="results">3. 조 편성 결과</div>
+    </div>
+
+    <div id="membersTab" class="tab-content active">
+      <div class="section">
+        <h2>인원 관리</h2>
+        <div class="row">
+          <input type="text" id="memberName" placeholder="이름" />
+          <select id="memberRank">
+            <option value="1">계급 1</option>
+            <option value="2">계급 2</option>
+            <option value="3">계급 3</option>
+            <option value="4">계급 4</option>
+            <option value="5">계급 5</option>
+            <option value="6">계급 6</option>
+            <option value="7">계급 7</option>
+          </select>
+          <button id="addMember">인원 추가</button>
+        </div>
+
+        <div class="row">
+          <button id="saveMemberList" class="secondary">인원 목록 저장</button>
+          <button id="loadMemberList" class="secondary">
+            인원 목록 불러오기
+          </button>
+          <button id="clearMemberList" class="danger">인원 목록 초기화</button>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item">
+            <span class="rank-indicator rank-1">1</span> 계급 1
+          </div>
+          <div class="legend-item">
+            <span class="rank-indicator rank-2">2</span> 계급 2
+          </div>
+          <div class="legend-item">
+            <span class="rank-indicator rank-3">3</span> 계급 3
+          </div>
+          <div class="legend-item">
+            <span class="rank-indicator rank-4">4</span> 계급 4
+          </div>
+          <div class="legend-item">
+            <span class="rank-indicator rank-5">5</span> 계급 5
+          </div>
+          <div class="legend-item">
+            <span class="rank-indicator rank-6">6</span> 계급 6
+          </div>
+          <div class="legend-item">
+            <span class="rank-indicator rank-7">7</span> 계급 7
+          </div>
+        </div>
+
+        <h3>인원 목록</h3>
+        <div class="member-list" id="memberListContainer">
+          <!-- 인원 목록이 여기에 추가됩니다 -->
+        </div>
+
+        <div class="row" style="justify-content: flex-end">
+          <button id="goToAbsense" class="secondary">
+            다음: 불참 조건 설정
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="absenseTab" class="tab-content">
+      <div class="section">
+        <h2>불참 조건 설정</h2>
+        <div class="row">
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              gap: 10px;
+              width: 100%;
+            "
+          >
+            <label for="startDate">시작 날짜 (목요일):</label>
+            <input type="date" id="startDate" />
+            <button id="applyStartDate" class="secondary">적용</button>
+          </div>
+        </div>
+        <p>체크박스를 클릭하여 불참 여부를 설정하세요. (체크 = 불참)</p>
+        <div class="row">
+          <button id="clearAllAbsense" class="danger">모든 체크 지우기</button>
+          <button id="generateGroups" class="secondary">
+            식세조 편성 시작
+          </button>
+        </div>
+
+        <div class="table-wrapper">
+          <div class="absense-table-container">
+            <table id="absenseTable">
+              <!-- 불참 조건 테이블이 여기에 추가됩니다 -->
+            </table>
+          </div>
+        </div>
+
+        <div class="loader" id="generationLoader"></div>
+
+        <div
+          class="row"
+          style="justify-content: space-between; margin-top: 20px"
+        >
+          <button id="backToMembers" class="secondary">이전: 인원 관리</button>
+          <button id="goToResults" class="secondary">다음: 조 편성 결과</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="resultsTab" class="tab-content">
+      <div class="section">
+        <h2>조 편성 결과</h2>
+        <div class="row">
+          <button id="runSchedulingAgain" class="secondary">
+            조 편성 다시 실행
+          </button>
+        </div>
+
+        <div class="table-wrapper">
+          <div class="results-container">
+            <table id="resultsTable">
+              <!-- 결과 테이블이 여기에 추가됩니다 -->
+            </table>
+          </div>
+        </div>
+
+        <!-- 참여 횟수 통계 영역 - 테이블 밖에 별도로 표시 -->
+        <div class="stats-section">
+          <h3 style="margin-top: 20px">인원별 참여 횟수</h3>
+          <div id="participationStats" class="participation-summary">
+            <!-- 참여 통계가 여기에 추가됩니다 -->
+          </div>
+        </div>
+
+        <div class="row" style="justify-content: flex-start; margin-top: 20px">
+          <button id="backToAbsense" class="secondary">
+            이전: 불참 조건 설정
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="notification"></div>
+
+    <script>
+      // 전역 변수 정의
+      let members = [];
+      let absenseData = {};
+      let schedulingResult = [];
+
+      // DOM 요소 상수
+      const MEMBER_NAME_INPUT = document.getElementById("memberName");
+      const MEMBER_RANK_SELECT = document.getElementById("memberRank");
+      const MEMBER_LIST_CONTAINER = document.getElementById(
+        "memberListContainer"
+      );
+      const ABSENSE_TABLE = document.getElementById("absenseTable");
+      const RESULTS_TABLE = document.getElementById("resultsTable");
+      const GENERATION_LOADER = document.getElementById("generationLoader");
+      const NOTIFICATION = document.getElementById("notification");
+
+      // 상수 및 설정
+      const MEALS_PER_DAY = 3; // 조식, 중식, 석식
+      const GROUP_SIZE = 4; // 4인 1조
+      const SCHEDULE_DAYS = 15; // 2주간 (첫날은 중식부터 시작)
+      const SATURDAY_MEALS = 2; // 토요일은 브런치 2끼
+      const MEAL_NAMES = ["조식", "중식", "석식"];
+
+      // 날짜 관련 설정
+      let START_DATE = new Date("2024-05-09"); // 기본값: 2024년 5월 9일 (목요일)
+      let END_DATE = new Date(START_DATE);
+      END_DATE.setDate(END_DATE.getDate() + 14); // 시작일로부터 2주
+
+      // 유틸리티 함수
+      function formatDate(date) {
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        return `${month}/${day}`;
+      }
+
+      function getDayName(date) {
+        const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+        return dayNames[date.getDay()];
+      }
+
+      function isWeekend(date) {
+        const day = date.getDay();
+        return day === 0 || day === 6; // 0 = 일요일, 6 = 토요일
+      }
+
+      function getDateFormatted(startDate, dayOffset) {
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + dayOffset);
+        return {
+          date: date,
+          formatted: formatDate(date),
+          dayName: getDayName(date),
+          isWeekend: isWeekend(date),
+        };
+      }
+
+      function showNotification(message, isSuccess = true) {
+        NOTIFICATION.textContent = message;
+        NOTIFICATION.style.backgroundColor = isSuccess ? "#2ecc71" : "#e74c3c";
+        NOTIFICATION.style.display = "block";
+
+        setTimeout(() => {
+          NOTIFICATION.style.display = "none";
+        }, 3000);
+      }
+
+      // 인원 관리 기능
+      function addMember() {
+        const name = MEMBER_NAME_INPUT.value.trim();
+        const rank = parseInt(MEMBER_RANK_SELECT.value);
+
+        if (name === "") {
+          showNotification("이름을 입력해주세요", false);
+          return;
+        }
+
+        // 중복 체크
+        if (members.some((m) => m.name === name)) {
+          showNotification("같은 이름의 인원이 이미 존재합니다", false);
+          return;
+        }
+
+        const newMember = {
+          id: Date.now().toString(),
+          name: name,
+          rank: rank,
+        };
+
+        members.push(newMember);
+        renderMemberList();
+        MEMBER_NAME_INPUT.value = "";
+
+        // 불참 조건 테이블 업데이트
+        updateAbsenseTable();
+      }
+
+      function deleteMember(id) {
+        members = members.filter((member) => member.id !== id);
+        renderMemberList();
+
+        // 불참 조건 테이블 업데이트
+        updateAbsenseTable();
+      }
+
+      function renderMemberList() {
+        MEMBER_LIST_CONTAINER.innerHTML = "";
+
+        if (members.length === 0) {
+          MEMBER_LIST_CONTAINER.innerHTML = "<p>등록된 인원이 없습니다.</p>";
+          return;
+        }
+
+        members.forEach((member) => {
+          const memberElement = document.createElement("div");
+          memberElement.className = "member-row";
+          memberElement.innerHTML = `
+                    <div>
+                        <span class="rank-indicator rank-${member.rank}">${member.rank}</span>
+                        ${member.name}
+                    </div>
+                    <button class="danger" data-id="${member.id}" style="width: auto; min-width: 60px; padding: 5px 10px;">삭제</button>
+                `;
+
+          memberElement
+            .querySelector("button")
+            .addEventListener("click", () => {
+              deleteMember(member.id);
+            });
+
+          MEMBER_LIST_CONTAINER.appendChild(memberElement);
+        });
+      }
+
+      function saveMemberList() {
+        if (members.length === 0) {
+          showNotification("저장할 인원이 없습니다", false);
+          return;
+        }
+
+        localStorage.setItem("mealGroupMembers", JSON.stringify(members));
+        showNotification("인원 목록이 저장되었습니다");
+      }
+
+      function loadMemberList() {
+        const savedMembers = localStorage.getItem("mealGroupMembers");
+
+        if (!savedMembers) {
+          showNotification("저장된 인원 목록이 없습니다", false);
+          return;
+        }
+
+        try {
+          members = JSON.parse(savedMembers);
+          renderMemberList();
+          updateAbsenseTable();
+          showNotification("인원 목록을 불러왔습니다");
+        } catch (e) {
+          showNotification("인원 목록을 불러오는 데 실패했습니다", false);
+          console.error("로드 오류:", e);
+        }
+      }
+
+      function clearMemberList() {
+        if (confirm("인원 목록을 모두 삭제하시겠습니까?")) {
+          members = [];
+          renderMemberList();
+          updateAbsenseTable();
+          showNotification("인원 목록이 초기화되었습니다");
+        }
+      }
+
+      // 불참 조건 테이블 관련 기능
+      function updateAbsenseTable() {
+        if (members.length === 0) {
+          ABSENSE_TABLE.innerHTML = "<tr><td>등록된 인원이 없습니다.</td></tr>";
+          return;
+        }
+
+        // 기존 데이터 보존
+        const prevAbsenseData = { ...absenseData };
+        absenseData = {};
+
+        // 날짜 범위 생성
+        const dateRange = [];
+        for (let i = 0; i < SCHEDULE_DAYS; i++) {
+          const dateInfo = getDateFormatted(START_DATE, i);
+          dateRange.push(dateInfo);
+        }
+
+        // 식사 일정 생성 (첫날은 중식부터, 마지막날은 조식까지, 토요일은 브런치 2끼)
+        const mealScheduleByDate = {};
+
+        dateRange.forEach((dateInfo, i) => {
+          const dateKey = dateInfo.formatted;
+          const dayOfWeek = dateInfo.date.getDay();
+
+          // 각 날짜별 식사 결정
+          let mealsForDay = [...MEAL_NAMES]; // 기본: 조식, 중식, 석식
+
+          if (i === 0) {
+            mealsForDay = mealsForDay.slice(1); // 첫날은 중식부터
+          }
+
+          if (i === dateRange.length - 1) {
+            mealsForDay = mealsForDay.slice(0, 1); // 마지막날은 조식만
+          }
+
+          if (dayOfWeek === 6) {
+            // 토요일
+            mealsForDay = mealsForDay.slice(0, 2); // 브런치(2끼)만
+          }
+
+          mealScheduleByDate[dateKey] = {
+            date: dateInfo,
+            meals: mealsForDay,
+          };
+        });
+
+        // 테이블 생성 시작
+        let tableHTML = "<table>";
+
+        // 헤더 시작
+        tableHTML += "<thead>";
+
+        // 헤더 첫 번째 행: 날짜
+        tableHTML += '<tr><th rowspan="2">인원</th>';
+
+        // 날짜 헤더
+        for (let i = 0; i < dateRange.length; i++) {
+          const dateInfo = dateRange[i];
+          const dateKey = dateInfo.formatted;
+          const weekendClass = dateInfo.isWeekend ? "weekend" : "";
+          const mealsCount = mealScheduleByDate[dateKey].meals.length;
+
+          tableHTML += `<th colspan="${mealsCount}" class="${weekendClass}">
+                    ${dateKey} (${dateInfo.dayName})
+                </th>`;
+        }
+
+        tableHTML += "</tr>";
+
+        // 헤더 두 번째 행: 각 날짜별 식사
+        tableHTML += "<tr>";
+
+        for (let i = 0; i < dateRange.length; i++) {
+          const dateInfo = dateRange[i];
+          const dateKey = dateInfo.formatted;
+          const weekendClass = dateInfo.isWeekend ? "weekend" : "";
+          const meals = mealScheduleByDate[dateKey].meals;
+
+          meals.forEach((meal) => {
+            tableHTML += `<th class="${weekendClass}">${meal}</th>`;
+          });
+        }
+
+        tableHTML += "</tr>";
+        tableHTML += "</thead>";
+
+        // 테이블 본문 시작
+        tableHTML += "<tbody>";
+
+        // 인원별 행 생성
+        members.forEach((member) => {
+          // 불참 데이터 초기화
+          if (!absenseData[member.id]) {
+            absenseData[member.id] = {};
+          }
+
+          tableHTML += "<tr>";
+          tableHTML += `<td class="member-cell">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                        <span><span class="rank-indicator rank-${member.rank}">${member.rank}</span>${member.name}</span>
+                        <button class="toggle-all-absense secondary" data-member-id="${member.id}" style="font-size: 12px; padding: 4px 8px; min-height: 30px; width: auto;">모두 체크</button>
+                    </div>
+                </td>`;
+
+          // 각 날짜와 식사에 대한 체크박스 생성
+          for (let i = 0; i < dateRange.length; i++) {
+            const dateInfo = dateRange[i];
+            const dateKey = dateInfo.formatted;
+            const weekendClass = dateInfo.isWeekend ? "weekend" : "";
+            const meals = mealScheduleByDate[dateKey].meals;
+
+            meals.forEach((meal) => {
+              const cellKey = `${dateKey}-${meal}`;
+
+              // 초기값 설정 (이전 데이터 복원 또는 false로 초기화)
+              if (
+                prevAbsenseData[member.id] &&
+                prevAbsenseData[member.id][cellKey] !== undefined
+              ) {
+                absenseData[member.id][cellKey] =
+                  prevAbsenseData[member.id][cellKey];
+              } else {
+                absenseData[member.id][cellKey] = false;
+              }
+
+              const isAbsent = absenseData[member.id][cellKey];
+
+              tableHTML += `
+                            <td class="${weekendClass}">
+                                <div class="checkbox-container">
+                                    <input type="checkbox" id="${
+                                      member.id
+                                    }-${cellKey}" 
+                                           data-member-id="${member.id}" 
+                                           data-cell-key="${cellKey}" 
+                                           ${isAbsent ? "checked" : ""}
+                                           style="width:20px; height:20px;">
+                                </div>
+                            </td>
+                        `;
+            });
+          }
+
+          tableHTML += "</tr>";
+        });
+
+        tableHTML += "</tbody>";
+        tableHTML += "</table>";
+
+        ABSENSE_TABLE.innerHTML = tableHTML;
+
+        // 체크박스 이벤트 리스너 추가
+        document
+          .querySelectorAll('#absenseTable input[type="checkbox"]')
+          .forEach((checkbox) => {
+            checkbox.addEventListener("change", function () {
+              const memberId = this.dataset.memberId;
+              const cellKey = this.dataset.cellKey;
+              absenseData[memberId][cellKey] = this.checked;
+            });
+          });
+
+        // 모두 체크/해제 버튼 이벤트 리스너 추가
+        document.querySelectorAll(".toggle-all-absense").forEach((button) => {
+          button.addEventListener("click", function () {
+            const memberId = this.dataset.memberId;
+            toggleAllAbsenseForMember(memberId);
+          });
+        });
+      }
+
+      // 특정 인원의 모든 불참 체크박스 토글
+      function toggleAllAbsenseForMember(memberId) {
+        // 현재 체크 상태 확인 (하나라도 체크 안 된 것이 있으면 모두 체크로 간주)
+        const checkboxes = document.querySelectorAll(
+          `input[type="checkbox"][data-member-id="${memberId}"]`
+        );
+        const allChecked = Array.from(checkboxes).every((cb) => cb.checked);
+
+        // 모두 체크되어 있으면 모두 해제, 아니면 모두 체크
+        const newState = !allChecked;
+
+        checkboxes.forEach((checkbox) => {
+          checkbox.checked = newState;
+          const cellKey = checkbox.dataset.cellKey;
+          absenseData[memberId][cellKey] = newState;
+        });
+
+        const buttonText = newState ? "모두 해제" : "모두 체크";
+        document.querySelector(
+          `.toggle-all-absense[data-member-id="${memberId}"]`
+        ).textContent = buttonText;
+
+        showNotification(
+          `${
+            members.find((m) => m.id === memberId).name
+          }님의 모든 불참 조건이 ${newState ? "체크" : "해제"}되었습니다`
+        );
+      }
+
+      function clearAllAbsense() {
+        if (confirm("모든 불참 조건을 초기화하시겠습니까?")) {
+          // 모든 체크박스 해제
+          document
+            .querySelectorAll('#absenseTable input[type="checkbox"]')
+            .forEach((checkbox) => {
+              checkbox.checked = false;
+
+              const memberId = checkbox.dataset.memberId;
+              const cellKey = checkbox.dataset.cellKey;
+              if (absenseData[memberId]) {
+                absenseData[memberId][cellKey] = false;
+              }
+            });
+
+          showNotification("모든 불참 조건이 초기화되었습니다");
+        }
+      }
+
+      // 조 편성 알고리즘
+      function generateGroups() {
+        if (members.length === 0) {
+          showNotification("인원이 없어 편성할 수 없습니다", false);
+          return;
+        }
+
+        GENERATION_LOADER.style.display = "block";
+
+        // 비동기 처리를 위한 setTimeout 사용
+        setTimeout(() => {
+          try {
+            // 조 편성 결과 초기화
+            schedulingResult = [];
+
+            // 날짜 범위 및 식사 시간 배열 생성
+            const mealSlots = [];
+
+            for (let i = 0; i < SCHEDULE_DAYS; i++) {
+              const dateInfo = getDateFormatted(START_DATE, i);
+              const dateKey = dateInfo.formatted;
+              const dayOfWeek = dateInfo.date.getDay();
+
+              // 식사 수 결정 (첫날은 중식부터, 마지막날은 조식까지, 토요일은 브런치 2끼)
+              let mealsToSchedule = MEALS_PER_DAY;
+              if (i === 0) mealsToSchedule = 2; // 중식, 석식
+              if (i === SCHEDULE_DAYS - 1) mealsToSchedule = 1; // 조식만
+              if (dayOfWeek === 6) mealsToSchedule = SATURDAY_MEALS; // 토요일 2끼
+
+              // 각 식사에 대한 슬롯 생성
+              for (let j = 0; j < mealsToSchedule; j++) {
+                let mealIndex = j;
+                if (i === 0) mealIndex = j + 1; // 첫날은 중식(1)부터 시작
+
+                const mealName = MEAL_NAMES[mealIndex];
+                const mealKey = `${dateKey}-${mealName}`;
+
+                mealSlots.push({
+                  date: dateInfo.date,
+                  dateFormatted: dateKey,
+                  dayName: dateInfo.dayName,
+                  isWeekend: dateInfo.isWeekend,
+                  meal: mealName,
+                  mealKey: mealKey,
+                });
+              }
+            }
+
+            // 총 참여 횟수 추적을 위한 객체
+            const participationCount = {};
+            members.forEach((member) => {
+              participationCount[member.id] = 0;
+            });
+
+            // 각 식사 슬롯에 대해 조 편성
+            mealSlots.forEach((slot) => {
+              // 참여 가능한 인원 필터링 (불참 조건에 없는 인원)
+              const availableMembers = members.filter((member) => {
+                return (
+                  !absenseData[member.id] ||
+                  !absenseData[member.id][slot.mealKey]
+                );
+              });
+
+              // 참여 가능한 인원을 참여 횟수가 적은 순으로 정렬
+              availableMembers.sort((a, b) => {
+                return participationCount[a.id] - participationCount[b.id];
+              });
+
+              // 4인 1조로 그룹 생성
+              const group = [];
+
+              // 참여 횟수가 가장 적은 인원 먼저 그룹에 추가
+              while (group.length < GROUP_SIZE && availableMembers.length > 0) {
+                // 계급 다양성 확보를 위한 우선순위 결정
+                const existingRanks = group.map((m) => m.rank);
+
+                // 그룹에 없는 계급 찾기
+                const candidatesWithDifferentRank = availableMembers.filter(
+                  (m) => !existingRanks.includes(m.rank)
+                );
+
+                // 새로운 계급의 인원이 있으면 추가, 없으면 일반 순서대로 추가
+                const memberToAdd =
+                  candidatesWithDifferentRank.length > 0
+                    ? candidatesWithDifferentRank[0]
+                    : availableMembers[0];
+
+                group.push(memberToAdd);
+
+                // 선택된 인원 제거 및 참여 횟수 증가
+                const index = availableMembers.findIndex(
+                  (m) => m.id === memberToAdd.id
+                );
+                availableMembers.splice(index, 1);
+                participationCount[memberToAdd.id]++;
+              }
+
+              // 4인이 되지 않으면 공석으로 채우기
+              while (group.length < GROUP_SIZE) {
+                group.push({ name: "(공석)", rank: 0 });
+              }
+
+              // 결과에 추가
+              schedulingResult.push({
+                ...slot,
+                group: group,
+              });
+            });
+
+            // 결과 테이블 렌더링
+            renderResultsTable(participationCount);
+
+            // 로딩 중지 및 결과 탭으로 이동
+            GENERATION_LOADER.style.display = "none";
+            showNotification("조 편성이 완료되었습니다");
+            switchTab("results");
+          } catch (error) {
+            console.error("조 편성 오류:", error);
+            GENERATION_LOADER.style.display = "none";
+            showNotification("조 편성 중 오류가 발생했습니다", false);
+          }
+        }, 100);
+      }
+
+      // 결과 테이블 렌더링
+      function renderResultsTable(participationCount) {
+        if (schedulingResult.length === 0) {
+          RESULTS_TABLE.innerHTML = "<tr><td>편성된 결과가 없습니다.</td></tr>";
+          document.getElementById("participationStats").innerHTML =
+            "<p>편성된 결과가 없습니다.</p>";
+          return;
+        }
+
+        // 날짜별로 그룹화
+        const resultsByDate = {};
+
+        schedulingResult.forEach((result) => {
+          if (!resultsByDate[result.dateFormatted]) {
+            resultsByDate[result.dateFormatted] = {
+              date: result.date,
+              dateFormatted: result.dateFormatted,
+              dayName: result.dayName,
+              isWeekend: result.isWeekend,
+              meals: {},
+            };
+          }
+
+          resultsByDate[result.dateFormatted].meals[result.meal] = result.group;
+        });
+
+        // 테이블 헤더 생성
+        let tableHTML = "<table>";
+        tableHTML += "<thead>";
+        tableHTML += `
+                <tr>
+                    <th>날짜</th>
+                    <th>요일</th>
+                    <th>조식</th>
+                    <th>중식</th>
+                    <th>석식</th>
+                </tr>
+            `;
+        tableHTML += "</thead>";
+        tableHTML += "<tbody>";
+
+        // 날짜 순으로 정렬
+        const sortedDates = Object.keys(resultsByDate).sort((a, b) => {
+          return (
+            new Date(resultsByDate[a].date) - new Date(resultsByDate[b].date)
+          );
+        });
+
+        // 테이블 내용 생성
+        sortedDates.forEach((dateKey) => {
+          const dateInfo = resultsByDate[dateKey];
+          const weekendClass = dateInfo.isWeekend ? "weekend" : "";
+
+          tableHTML += `
+                    <tr class="${weekendClass}">
+                        <td>${dateInfo.dateFormatted}</td>
+                        <td>${dateInfo.dayName}</td>
+                `;
+
+          // 각 식사 시간별 그룹 표시
+          MEAL_NAMES.forEach((meal) => {
+            if (dateInfo.meals[meal]) {
+              tableHTML += "<td>";
+
+              dateInfo.meals[meal].forEach((member) => {
+                const rankClass = member.rank > 0 ? `rank-${member.rank}` : "";
+                tableHTML += `
+                                <div class="result-member ${rankClass}">
+                                    ${
+                                      member.rank > 0
+                                        ? `<span class="rank-indicator rank-${member.rank}">${member.rank}</span>`
+                                        : ""
+                                    }
+                                    ${member.name}
+                                </div>
+                            `;
+              });
+
+              tableHTML += "</td>";
+            } else {
+              tableHTML += "<td>-</td>";
+            }
+          });
+
+          tableHTML += "</tr>";
+        });
+
+        tableHTML += "</tbody>";
+        tableHTML += "</table>";
+
+        // 테이블만 출력
+        RESULTS_TABLE.innerHTML = tableHTML;
+
+        // 참여 횟수 통계를 별도 섹션에 표시
+        let statsHTML = "";
+
+        // 인원별 참여 횟수 통계 표시
+        members.forEach((member) => {
+          const count = participationCount[member.id] || 0;
+          statsHTML += `
+                    <div style="background-color: #f5f5f5; padding: 10px; border-radius: 5px;">
+                        <div>
+                            <span class="rank-indicator rank-${member.rank}">${member.rank}</span>
+                            ${member.name}
+                        </div>
+                        <div style="font-weight: bold; margin-top: 5px;">
+                            참여 횟수: ${count}회
+                        </div>
+                    </div>
+                `;
+        });
+
+        // 통계 섹션에 별도로 출력
+        document.getElementById("participationStats").innerHTML = statsHTML;
+      }
+
+      // 탭 관련 기능
+      function switchTab(tabId) {
+        // 모든 탭 비활성화
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        document.querySelectorAll(".tab-content").forEach((content) => {
+          content.classList.remove("active");
+        });
+
+        // 선택한 탭 활성화
+        document
+          .querySelector(`.tab[data-tab="${tabId}"]`)
+          .classList.add("active");
+        document.getElementById(`${tabId}Tab`).classList.add("active");
+      }
+
+      // 시작 날짜 적용 함수
+      function applyStartDate() {
+        const startDateInput = document.getElementById("startDate");
+        const selectedDate = new Date(startDateInput.value);
+
+        // 날짜가 선택되었는지 확인
+        if (isNaN(selectedDate.getTime())) {
+          showNotification("날짜를 선택해주세요", false);
+          return;
+        }
+
+        // 목요일(4)인지 확인
+        if (selectedDate.getDay() !== 4) {
+          showNotification("시작 날짜는 목요일이어야 합니다", false);
+          return;
+        }
+
+        // 날짜 업데이트
+        START_DATE = new Date(selectedDate);
+        END_DATE = new Date(START_DATE);
+        END_DATE.setDate(END_DATE.getDate() + 14); // 시작일로부터 2주
+
+        // 테이블 업데이트
+        updateAbsenseTable();
+        showNotification(
+          "시작 날짜가 변경되었습니다: " + formatDate(START_DATE)
+        );
+      }
+
+      // 오늘 날짜 기준 가장 가까운 목요일 찾기
+      function getNearestThursday() {
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0=일요일, 4=목요일
+        const daysUntilThursday = (4 - dayOfWeek + 7) % 7;
+
+        const nearestThursday = new Date(today);
+        nearestThursday.setDate(today.getDate() + daysUntilThursday);
+
+        return nearestThursday;
+      }
+
+      // 날짜 입력 형식 (YYYY-MM-DD) 변환
+      function formatDateForInput(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      // 이벤트 리스너 등록
+      document.addEventListener("DOMContentLoaded", function () {
+        // 인원 관리 이벤트
+        document
+          .getElementById("addMember")
+          .addEventListener("click", addMember);
+        document
+          .getElementById("saveMemberList")
+          .addEventListener("click", saveMemberList);
+        document
+          .getElementById("loadMemberList")
+          .addEventListener("click", loadMemberList);
+        document
+          .getElementById("clearMemberList")
+          .addEventListener("click", clearMemberList);
+
+        // 시작 날짜 초기화 및 이벤트 리스너
+        const startDateInput = document.getElementById("startDate");
+        const nearestThursday = getNearestThursday();
+        startDateInput.value = formatDateForInput(nearestThursday);
+        START_DATE = new Date(nearestThursday);
+        END_DATE = new Date(START_DATE);
+        END_DATE.setDate(END_DATE.getDate() + 14);
+
+        document
+          .getElementById("applyStartDate")
+          .addEventListener("click", applyStartDate);
+
+        // 탭 전환 이벤트
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.addEventListener("click", function () {
+            switchTab(this.dataset.tab);
+          });
+        });
+
+        document
+          .getElementById("goToAbsense")
+          .addEventListener("click", () => switchTab("absense"));
+        document
+          .getElementById("backToMembers")
+          .addEventListener("click", () => switchTab("members"));
+        document
+          .getElementById("goToResults")
+          .addEventListener("click", () => switchTab("results"));
+        document
+          .getElementById("backToAbsense")
+          .addEventListener("click", () => switchTab("absense"));
+
+        // 불참 조건 및 조 편성 이벤트
+        document
+          .getElementById("clearAllAbsense")
+          .addEventListener("click", clearAllAbsense);
+        document
+          .getElementById("generateGroups")
+          .addEventListener("click", generateGroups);
+        document
+          .getElementById("runSchedulingAgain")
+          .addEventListener("click", generateGroups);
+
+        // 엔터 키로 인원 추가
+        MEMBER_NAME_INPUT.addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            addMember();
+          }
+        });
+
+        // 초기 렌더링
+        renderMemberList();
+        updateAbsenseTable();
+      });
+    </script>
+  </body>
 </html>
